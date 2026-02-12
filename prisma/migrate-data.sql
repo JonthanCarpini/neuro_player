@@ -17,8 +17,9 @@ DELETE FROM admins;
 -- Mapeamento: nome→name, email→email, senha→password, ativo→active, ultimo_acesso→last_access
 -- NOTA: senha PHP ($2y$) é compatível com bcrypt ($2a$/$2b$) — funciona com bcryptjs
 -- =============================================
+-- Senha: admin123 (hash bcryptjs $2a$)
 INSERT INTO admins (id, name, email, password, active, last_access, created_at) VALUES
-(1, 'Administrador', 'admin@neuroplay.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, NULL, '2026-02-12 02:53:32');
+(1, 'Administrador', 'admin@neuroplay.com', '$2a$10$oiLox3DC2e1UUtraAPMNQOC6VhFhW9t3Xaa2UnpzrVShGMHoKVJsG', 1, NULL, '2026-02-12 02:53:32');
 
 -- =============================================
 -- 3. PROVIDERS (soupet_gerencia.provedores → neuroplay.providers)
@@ -27,7 +28,8 @@ INSERT INTO admins (id, name, email, password, active, last_access, created_at) 
 --   ativo→active, data_vencimento→due_date
 -- =============================================
 INSERT INTO providers (id, code, name, email, password, logo, banner, url_primary, url_backup_1, url_backup_2, active, due_date, created_at, updated_at) VALUES
-(1, '0001', 'Provedor Teste', 'teste@teste.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NULL, NULL, 'http://p2player.sbs', NULL, NULL, 1, NULL, '2026-02-12 03:09:33', '2026-02-12 03:09:33');
+-- Senha: admin123 (hash bcryptjs $2a$)
+(1, '0001', 'Provedor Teste', 'teste@teste.com', '$2a$10$oiLox3DC2e1UUtraAPMNQOC6VhFhW9t3Xaa2UnpzrVShGMHoKVJsG', NULL, NULL, 'http://p2player.sbs', NULL, NULL, 1, NULL, '2026-02-12 03:09:33', '2026-02-12 03:09:33');
 
 -- =============================================
 -- 4. SETTINGS (soupet_gerencia.configuracoes_gerais → neuroplay.settings)
