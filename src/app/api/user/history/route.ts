@@ -16,10 +16,12 @@ export async function GET(req: NextRequest) {
   if (!profile) return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 404 });
 
   const tipo = req.nextUrl.searchParams.get('tipo');
+  const completed = req.nextUrl.searchParams.get('completed');
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit')) || 50, 100);
 
   const where: Record<string, unknown> = { profileId: BigInt(profileId) };
   if (tipo) where.contentType = tipo;
+  if (completed !== null) where.completed = completed === '1' || completed === 'true';
 
   const history = await prisma.viewHistory.findMany({
     where,
