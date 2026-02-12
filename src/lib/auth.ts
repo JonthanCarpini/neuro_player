@@ -105,7 +105,9 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 export async function comparePassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
+  // PHP gera hashes $2y$ mas bcryptjs só suporta $2a$/$2b$
+  const normalizedHash = hash.replace(/^\$2y\$/, '$2a$');
+  return bcrypt.compare(password, normalizedHash);
 }
 
 // ---- Refresh Token ----
