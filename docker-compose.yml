@@ -1,0 +1,46 @@
+services:
+  mysql_neuroplay:
+    image: mysql:8.0
+    container_name: mysql_neuroplay
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-NeuroPlay@2026}
+      MYSQL_DATABASE: neuroplay
+      MYSQL_USER: neuroplay
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-NeuroPlay@2026}
+    volumes:
+      - mysql_neuroplay_data:/var/lib/mysql
+    networks:
+      - web_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  neuroplay:
+    build: .
+    container_name: neuroplay
+    restart: unless-stopped
+    depends_on:
+      mysql_neuroplay:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://neuroplay:${MYSQL_PASSWORD:-NeuroPlay@2026}@mysql_neuroplay:3306/neuroplay
+      JWT_SECRET: ${JWT_SECRET:-mude-esta-chave-em-producao-min-32-chars}
+      NODE_ENV: production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.neuroplay.rule=Host(`neuroplay.vp1.officex.site`)"
+      - "traefik.http.routers.neuroplay.entrypoints=websecure"
+      - "traefik.http.routers.neuroplay.tls.certresolver=myresolver"
+      - "traefik.http.services.neuroplay.loadbalancer.server.port=3000"
+    networks:
+      - web_network
+
+volumes:
+  mysql_neuroplay_data:
+
+networks:
+  web_network:
+    external: true

@@ -1,0 +1,331 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================
+// ADMIN (ex soupet_gerencia)
+// =============================================
+
+model Admin {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(100)
+  email      String    @unique @db.VarChar(150)
+  password   String    @db.VarChar(255)
+  active     Boolean   @default(true)
+  lastAccess DateTime? @map("last_access")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("admins")
+}
+
+model Provider {
+  id         Int       @id @default(autoincrement())
+  code       String    @unique @db.VarChar(20)
+  name       String    @db.VarChar(150)
+  email      String    @unique @db.VarChar(150)
+  password   String    @db.VarChar(255)
+  logo       String?   @db.VarChar(500)
+  banner     String?   @db.VarChar(500)
+  urlPrimary String    @map("url_primary") @db.VarChar(500)
+  urlBackup1 String?   @map("url_backup_1") @db.VarChar(500)
+  urlBackup2 String?   @map("url_backup_2") @db.VarChar(500)
+  active     Boolean   @default(true)
+  dueDate    DateTime? @map("due_date") @db.Date
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  specialCategories ProviderSpecialCategory[]
+  highlights        Highlight[]
+  kidsHighlights    KidsHighlight[]
+  messages          ProviderMessage[]
+  news              ProviderNews[]
+  finances          Finance[]
+  users             User[]
+  playlistCache     PlaylistCache[]
+
+  @@map("providers")
+}
+
+model ProviderSpecialCategory {
+  id           Int    @id @default(autoincrement())
+  providerId   Int    @map("provider_id")
+  contentType  String @map("content_type") @db.VarChar(10)
+  categoryType String @map("category_type") @db.VarChar(10)
+  categoryId   String @map("category_id") @db.VarChar(50)
+  categoryName String @map("category_name") @db.VarChar(150)
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, contentType, categoryType, categoryId])
+  @@map("provider_special_categories")
+}
+
+model Setting {
+  id          Int    @id @default(autoincrement())
+  key         String @unique @db.VarChar(100)
+  value       String @db.Text
+  description String @default("") @db.VarChar(255)
+  type        String @default("string") @db.VarChar(20)
+
+  @@map("settings")
+}
+
+model SystemLog {
+  id          BigInt   @id @default(autoincrement())
+  userType    String   @map("user_type") @db.VarChar(20)
+  userId      Int      @map("user_id")
+  action      String   @db.VarChar(100)
+  description String   @db.Text
+  ipAddress   String?  @map("ip_address") @db.VarChar(45)
+  userAgent   String?  @map("user_agent") @db.Text
+  extraData   Json?    @map("extra_data")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("system_logs")
+}
+
+model Finance {
+  id            BigInt    @id @default(autoincrement())
+  providerId    Int       @map("provider_id")
+  amount        Decimal   @db.Decimal(10, 2)
+  dueDate       DateTime  @map("due_date") @db.Date
+  paymentDate   DateTime? @map("payment_date") @db.Date
+  status        String    @default("pendente") @db.VarChar(20)
+  paymentMethod String?   @map("payment_method") @db.VarChar(50)
+  receipt       String?   @db.VarChar(255)
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("finances")
+}
+
+model ProviderMessage {
+  id         BigInt    @id @default(autoincrement())
+  providerId Int       @map("provider_id")
+  title      String    @db.VarChar(200)
+  content    String    @db.Text
+  type       String    @default("info") @db.VarChar(20)
+  active     Boolean   @default(true)
+  startDate  DateTime? @map("start_date")
+  endDate    DateTime? @map("end_date")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("provider_messages")
+}
+
+model ProviderNews {
+  id          BigInt   @id @default(autoincrement())
+  providerId  Int      @map("provider_id")
+  title       String   @db.VarChar(200)
+  description String   @db.Text
+  image       String?  @db.VarChar(500)
+  link        String?  @db.VarChar(500)
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("provider_news")
+}
+
+model Highlight {
+  id           BigInt  @id @default(autoincrement())
+  providerId   Int     @map("provider_id")
+  type         String  @db.VarChar(10)
+  categoryName String  @map("category_name") @db.VarChar(100)
+  categoryId   String  @map("category_id") @db.VarChar(50)
+  logoUrl      String  @map("logo_url") @db.VarChar(500)
+  order        Int     @default(0)
+  active       Boolean @default(true)
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, type, categoryId])
+  @@map("highlights")
+}
+
+model KidsHighlight {
+  id           Int     @id @default(autoincrement())
+  providerId   Int     @map("provider_id")
+  contentType  String  @map("content_type") @db.VarChar(10)
+  contentId    Int     @map("content_id")
+  providerName String  @map("provider_name") @db.VarChar(100)
+  categoryId   String  @map("category_id") @db.VarChar(50)
+  logoUrl      String  @map("logo_url") @db.VarChar(500)
+  order        Int     @default(0)
+  active       Boolean @default(true)
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("kids_highlights")
+}
+
+model RefreshToken {
+  id        BigInt   @id @default(autoincrement())
+  userType  String   @map("user_type") @db.VarChar(20)
+  userId    Int      @map("user_id")
+  token     String   @unique @db.VarChar(500)
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("refresh_tokens")
+}
+
+// =============================================
+// USUÁRIOS (ex soupet_provedor)
+// =============================================
+
+model User {
+  id             BigInt   @id @default(autoincrement())
+  providerId     Int      @map("provider_id")
+  providerCode   String   @map("provider_code") @db.VarChar(20)
+  providerLogin  String   @map("provider_login") @db.VarChar(150)
+  name           String   @default("") @db.VarChar(150)
+  language       String   @default("pt-BR") @db.VarChar(5)
+  parentalActive Boolean  @default(false) @map("parental_active")
+  parentalPin    String   @default("0000") @map("parental_pin") @db.VarChar(6)
+  active         Boolean  @default(true)
+  providerData   Json?    @map("provider_data")
+  lastLogin      DateTime @default(now()) @map("last_login")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  provider Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  profiles Profile[]
+
+  @@unique([providerId, providerLogin])
+  @@map("users")
+}
+
+model Profile {
+  id           BigInt   @id @default(autoincrement())
+  userId       BigInt   @map("user_id")
+  name         String   @db.VarChar(100)
+  avatar       String   @default("1") @db.VarChar(255)
+  type         String   @default("adicional") @db.VarChar(20)
+  pinProtected Boolean  @default(false) @map("pin_protected")
+  pin          String?  @db.VarChar(6)
+  isKid        Boolean  @default(false) @map("is_kid")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  favorites Favorite[]
+  history   ViewHistory[]
+  tvRecent  TvRecent[]
+  schedules Schedule[]
+
+  @@map("profiles")
+}
+
+model Favorite {
+  id          BigInt   @id @default(autoincrement())
+  profileId   BigInt   @map("profile_id")
+  contentType String   @map("content_type") @db.VarChar(20)
+  contentId   String   @map("content_id") @db.VarChar(100)
+  name        String   @default("") @db.VarChar(255)
+  image       String   @default("") @db.VarChar(500)
+  extraData   Json?    @map("extra_data")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, contentType, contentId])
+  @@map("favorites")
+}
+
+model ViewHistory {
+  id              BigInt   @id @default(autoincrement())
+  profileId       BigInt   @map("profile_id")
+  contentType     String   @map("content_type") @db.VarChar(20)
+  contentId       String   @map("content_id") @db.VarChar(100)
+  name            String   @default("") @db.VarChar(255)
+  image           String   @default("") @db.VarChar(500)
+  positionSeconds Int      @default(0) @map("position_seconds")
+  durationSeconds Int      @default(0) @map("duration_seconds")
+  percentWatched  Decimal  @default(0) @map("percent_watched") @db.Decimal(5, 2)
+  episodeId       String   @default("") @map("episode_id") @db.VarChar(100)
+  season          Int?
+  episode         Int?
+  completed       Boolean  @default(false)
+  extraData       Json?    @map("extra_data")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, contentType, contentId, episodeId])
+  @@map("view_history")
+}
+
+model TvRecent {
+  id           BigInt   @id @default(autoincrement())
+  profileId    BigInt   @map("profile_id")
+  channelId    String   @map("channel_id") @db.VarChar(100)
+  name         String   @default("") @db.VarChar(255)
+  image        String   @default("") @db.VarChar(500)
+  group        String   @default("") @db.VarChar(255)
+  extraData    Json?    @map("extra_data")
+  totalWatched Int      @default(0) @map("total_watched")
+  lastAccess   DateTime @default(now()) @map("last_access")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, channelId])
+  @@map("tv_recent")
+}
+
+model Schedule {
+  id           BigInt    @id @default(autoincrement())
+  profileId    BigInt    @map("profile_id")
+  channelId    String    @map("channel_id") @db.VarChar(100)
+  channelName  String    @map("channel_name") @db.VarChar(255)
+  channelLogo  String?   @map("channel_logo") @db.VarChar(500)
+  programId    String    @map("program_id") @db.VarChar(100)
+  programTitle String    @map("program_title") @db.VarChar(255)
+  programDesc  String?   @map("program_desc") @db.Text
+  startTime    DateTime  @map("start_time")
+  endTime      DateTime  @map("end_time")
+  notified     Boolean   @default(false)
+  notifiedAt   DateTime? @map("notified_at")
+  canceled     Boolean   @default(false)
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("schedules")
+}
+
+model Avatar {
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(100)
+  file     String @db.VarChar(255)
+  category String @default("geral") @db.VarChar(50)
+  order    Int    @default(0)
+
+  @@map("avatars")
+}
+
+model PlaylistCache {
+  id         BigInt   @id @default(autoincrement())
+  providerId Int      @map("provider_id")
+  type       String   @db.VarChar(20)
+  data       Json
+  hash       String   @db.VarChar(64)
+  expiresAt  DateTime @map("expires_at")
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, type])
+  @@map("playlist_cache")
+}
