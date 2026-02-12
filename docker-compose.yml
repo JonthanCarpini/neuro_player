@@ -33,7 +33,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.neuroplay.rule=Host(`neuroplay.vp1.officex.site`)"
       - "traefik.http.routers.neuroplay.entrypoints=websecure"
-      - "traefik.http.routers.neuroplay.tls.certresolver=myresolver"
+      - "traefik.http.routers.neuroplay.tls.certresolver=le"
       - "traefik.http.services.neuroplay.loadbalancer.server.port=3000"
     networks:
       - web_network
