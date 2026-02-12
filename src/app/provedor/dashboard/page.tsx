@@ -14,14 +14,15 @@ interface Stats {
 }
 
 export default function ProviderDashboardPage() {
-  const { apiFetch } = useProviderAuth();
+  const { apiFetch, loading } = useProviderAuth();
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
+    if (loading) return;
     apiFetch('/api/panel/stats').then((data) => {
       if (data) setStats(data);
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!stats) {
     return <div className="text-gray-400">Carregando estatísticas...</div>;

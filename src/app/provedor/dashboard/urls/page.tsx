@@ -4,18 +4,19 @@ import { useEffect, useState } from 'react';
 import { useProviderAuth } from '@/lib/use-provider-auth';
 
 export default function UrlsPage() {
-  const { apiFetch } = useProviderAuth();
+  const { apiFetch, loading: authLoading } = useProviderAuth();
   const [urls, setUrls] = useState({ urlPrimary: '', urlBackup1: '', urlBackup2: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    if (authLoading) return;
     apiFetch('/api/panel/urls').then((data) => {
       if (data) setUrls({ urlPrimary: data.urlPrimary || '', urlBackup1: data.urlBackup1 || '', urlBackup2: data.urlBackup2 || '' });
       setLoading(false);
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();

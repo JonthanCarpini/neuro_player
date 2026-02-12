@@ -12,7 +12,7 @@ interface Setting {
 }
 
 export default function SettingsPage() {
-  const { apiFetch } = useAdminAuth();
+  const { apiFetch, loading: authLoading } = useAdminAuth();
   const [settings, setSettings] = useState<Setting[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -20,8 +20,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadSettings();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!authLoading) loadSettings();
+  }, [authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadSettings() {
     setLoading(true);

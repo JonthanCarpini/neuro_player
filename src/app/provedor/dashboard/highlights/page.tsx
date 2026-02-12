@@ -14,7 +14,7 @@ interface Highlight {
 }
 
 export default function HighlightsPage() {
-  const { apiFetch } = useProviderAuth();
+  const { apiFetch, loading: authLoading } = useProviderAuth();
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('');
@@ -25,12 +25,13 @@ export default function HighlightsPage() {
   const [saving, setSaving] = useState(false);
 
   const loadHighlights = useCallback(async () => {
+    if (authLoading) return;
     setLoading(true);
     const params = typeFilter ? `?type=${typeFilter}` : '';
     const data = await apiFetch(`/api/panel/highlights${params}`);
     if (data) setHighlights(data);
     setLoading(false);
-  }, [typeFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [typeFilter, authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { loadHighlights(); }, [loadHighlights]);
 

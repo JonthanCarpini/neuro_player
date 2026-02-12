@@ -15,7 +15,7 @@ const CONTENT_TYPES = ['tv', 'filme', 'serie'];
 const CATEGORY_TYPES = ['adulto', 'infantil', 'destaque'];
 
 export default function CategoriesPage() {
-  const { apiFetch } = useProviderAuth();
+  const { apiFetch, loading: authLoading } = useProviderAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,11 +25,12 @@ export default function CategoriesPage() {
   const [saving, setSaving] = useState(false);
 
   const loadCategories = useCallback(async () => {
+    if (authLoading) return;
     setLoading(true);
     const data = await apiFetch('/api/panel/categories');
     if (data) setCategories(data);
     setLoading(false);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { loadCategories(); }, [loadCategories]);
 

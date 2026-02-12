@@ -38,7 +38,7 @@ const EMPTY_FORM: ProviderForm = {
 };
 
 export default function ProvidersPage() {
-  const { apiFetch } = useAdminAuth();
+  const { apiFetch, loading: authLoading } = useAdminAuth();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -53,6 +53,7 @@ export default function ProvidersPage() {
   const [isEditing, setIsEditing] = useState(false);
 
   const loadProviders = useCallback(async () => {
+    if (authLoading) return;
     setLoading(true);
     const data = await apiFetch(`/api/admin/providers?page=${page}&limit=20&search=${encodeURIComponent(search)}`);
     if (data) {
@@ -60,7 +61,7 @@ export default function ProvidersPage() {
       setTotal(data.total);
     }
     setLoading(false);
-  }, [page, search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page, search, authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { loadProviders(); }, [loadProviders]);
 

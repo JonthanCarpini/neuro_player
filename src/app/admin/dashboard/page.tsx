@@ -15,14 +15,15 @@ interface Stats {
 }
 
 export default function DashboardPage() {
-  const { apiFetch } = useAdminAuth();
+  const { apiFetch, loading } = useAdminAuth();
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
+    if (loading) return;
     apiFetch('/api/admin/stats').then((data) => {
       if (data) setStats(data);
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!stats) {
     return <div className="text-gray-400">Carregando estatísticas...</div>;

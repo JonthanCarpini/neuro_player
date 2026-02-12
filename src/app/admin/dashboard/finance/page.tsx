@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function FinancePage() {
-  const { apiFetch } = useAdminAuth();
+  const { apiFetch, loading: authLoading } = useAdminAuth();
   const [records, setRecords] = useState<FinanceRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -42,6 +42,7 @@ export default function FinancePage() {
   const [saving, setSaving] = useState(false);
 
   const loadRecords = useCallback(async () => {
+    if (authLoading) return;
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), limit: '20' });
     if (statusFilter) params.set('status', statusFilter);
@@ -52,7 +53,7 @@ export default function FinancePage() {
       setTotal(data.total);
     }
     setLoading(false);
-  }, [page, statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page, statusFilter, authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { loadRecords(); }, [loadRecords]);
 

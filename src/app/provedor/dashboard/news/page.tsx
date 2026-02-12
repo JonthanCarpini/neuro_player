@@ -15,7 +15,7 @@ interface NewsItem {
 }
 
 export default function NewsPage() {
-  const { apiFetch } = useProviderAuth();
+  const { apiFetch, loading: authLoading } = useProviderAuth();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,11 +24,12 @@ export default function NewsPage() {
   const [saving, setSaving] = useState(false);
 
   const loadNews = useCallback(async () => {
+    if (authLoading) return;
     setLoading(true);
     const data = await apiFetch('/api/panel/news');
     if (data) setNews(data);
     setLoading(false);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { loadNews(); }, [loadNews]);
 

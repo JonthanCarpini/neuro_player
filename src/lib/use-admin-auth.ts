@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface AdminUser {
@@ -13,8 +13,8 @@ interface AdminUser {
 export function useAdminAuth() {
   const router = useRouter();
   const [user, setUser] = useState<AdminUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const tokenRef = useRef<string | null>(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('admin_token');
@@ -26,7 +26,7 @@ export function useAdminAuth() {
     }
 
     try {
-      setToken(storedToken);
+      tokenRef.current = storedToken;
       setUser(JSON.parse(storedUser));
     } catch {
       router.push('/admin');
@@ -36,19 +36,23 @@ export function useAdminAuth() {
     setLoading(false);
   }, [router]);
 
-  function logout() {
+  const logout = useCallback(() => {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_refresh');
     localStorage.removeItem('admin_user');
+    tokenRef.current = null;
     router.push('/admin');
-  }
+  }, [router]);
 
-  async function apiFetch(url: string, options: RequestInit = {}) {
+  const apiFetch = useCallback(async (url: string, options: RequestInit = {}) => {
+    const t = tokenRef.current;
+    if (!t) return null;
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {}),
     };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${t}`;
 
     const res = await fetch(url, { ...options, headers });
 
@@ -58,7 +62,7 @@ export function useAdminAuth() {
     }
 
     return res.json();
-  }
+  }, [logout]);
 
-  return { user, token, loading, logout, apiFetch };
+  return { user, token: tokenRef.current, loading, logout, apiFetch };
 }

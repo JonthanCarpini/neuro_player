@@ -20,7 +20,7 @@ interface ProviderProfile {
 }
 
 export default function ProfilePage() {
-  const { apiFetch } = useProviderAuth();
+  const { apiFetch, loading: authLoading } = useProviderAuth();
   const [profile, setProfile] = useState<ProviderProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const [passSaving, setPassSaving] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     apiFetch('/api/panel/profile').then((data) => {
       if (data) {
         setProfile(data);
@@ -48,7 +49,7 @@ export default function ProfilePage() {
       }
       setLoading(false);
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();

@@ -17,7 +17,7 @@ interface Message {
 const MSG_TYPES = ['info', 'alerta', 'urgente', 'promocao'];
 
 export default function MessagesPage() {
-  const { apiFetch } = useProviderAuth();
+  const { apiFetch, loading: authLoading } = useProviderAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,11 +26,12 @@ export default function MessagesPage() {
   const [saving, setSaving] = useState(false);
 
   const loadMessages = useCallback(async () => {
+    if (authLoading) return;
     setLoading(true);
     const data = await apiFetch('/api/panel/messages');
     if (data) setMessages(data);
     setLoading(false);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { loadMessages(); }, [loadMessages]);
 
